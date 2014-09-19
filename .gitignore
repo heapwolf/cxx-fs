@@ -1,6 +1,6 @@
 build
 util
 deps
-test
+test/test
 .DS_Store
 
