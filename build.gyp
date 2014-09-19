@@ -6,7 +6,8 @@
       'product_name': 'nodeuv-fs',
       'type': 'static_library',
       'sources': [
-        'fs.h', 'fs.cc'
+        'fs.h', 
+        './src/fs.cc'
       ],
       'dependencies': [
         './deps/libuv/uv.gyp:libuv',
@@ -16,7 +17,8 @@
       'target_name': 'test',
       'type': 'executable',
       'sources': [
-        'http.cc', 'test.cc',
+        './src/fs.cc', 
+        './test/test.cc',
       ],
       'dependencies': [
         './deps/libuv/uv.gyp:libuv',

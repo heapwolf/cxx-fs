@@ -18,9 +18,9 @@ build: $(DEPS)
 	deps/gyp/gyp --depth=. -Goutput_dir=./out -Icommon.gypi --generator-output=./build -Dlibrary=static_library -Duv_library=static_library -f make
 
 .PHONY: test
-test: test.cc
+test: ./test/test.cc
 	make -C ./build/ test
-	cp ./build/out/Release/test ./test
+	cp ./build/out/Release/test ./test/test
 
 distclean:
 	make clean
