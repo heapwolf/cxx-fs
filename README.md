@@ -12,7 +12,7 @@ int main() {
  
   Filesystem fs;
 
-  fs.readFile("test.txt", [&](auto err, auto data) {
+  fs.readFile("test.txt", [](auto err, auto data) {
 
     if (err) {
       cout << err.message << endl;
