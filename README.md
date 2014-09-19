@@ -1,4 +1,5 @@
 # SYNOPSIS
+A friendly c++1y wrapper for libuv's filesystem operations
 
 # USAGE
 
