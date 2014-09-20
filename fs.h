@@ -57,6 +57,39 @@ namespace fs {
       }
   };
 
+  //
+  // @TODO
+  // Probably move this into another library and add
+  // all the fluffy methods for concat, copy, etc.
+  //
+  class Buffer {
+    public:
+      uv_buf_t data;
+
+      Buffer(string s) {
+        char* cstr = (char*) s.c_str();
+        data = uv_buf_init(cstr, sizeof(cstr));
+      }
+
+      Buffer(int size) {
+        char cstr[size];
+        data = uv_buf_init(cstr, sizeof(cstr));
+      }
+ 
+      ~Buffer() {
+      }
+  };
+
+  struct ReadOptions {
+    int flags = O_CREAT | O_RDWR;
+    int mode = S_IRUSR | S_IWUSR;
+  };
+
+  struct WriteOptions {
+    int flags = O_WRONLY | O_CREAT;
+    int mode = S_IRUSR | S_IWUSR;
+  };
+
   class Filesystem {
     public:
       uv_loop_t* UV_LOOP;
@@ -70,16 +103,21 @@ namespace fs {
       // 
       // basic functions...
       //
-      void open(const char*, Callback<Error, long>);
-      void read(long, unsigned int, int64_t, Callback<Error, uv_buf_t>);
       void stat(const char*, Callback<Error, Stats>);
-      void close(long fd, Callback<Error>);
+      void open(const char*, int, int, Callback<Error, uv_file>);
+      void read(uv_file, unsigned int, int64_t, Callback<Error, uv_buf_t>);
+      void write(uv_file, uv_buf_t, int64_t, Callback<Error>);
+      void close(uv_file fd, Callback<Error>);
 
       // 
       // fancy fluffy functions...
       //
       void readFile(const char*, Callback<Error, string>);
-      
+      void readFile(const char*, ReadOptions, Callback<Error, string>);
+
+      void writeFile(const char*, Buffer, Callback<Error>);
+      void writeFile(const char*, Buffer, WriteOptions, Callback<Error>);
+
       Filesystem() {
         UV_LOOP = uv_default_loop();
       };

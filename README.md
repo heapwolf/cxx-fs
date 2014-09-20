@@ -28,13 +28,16 @@ int main() {
 # API
 
 ## CONSTRUCTOR
-### Filestream fs;
+### Filesystem fs;
 Creates a loop for file operations.
 
 ## METHODS
 
 ### fs.readFile(path, callback);
 Stats, Opens, reads whole file, callback provides (`error`, `streambuf`).
+
+### fs.writeFile(path, buffer, callback);
+Opens, writes whole buffer, callback provides (`error`).
 
 ### fs.stat(path, callback);
 Callback provides (`error`, `stats`), where stats is a struct containing 
@@ -58,6 +61,9 @@ double stats.ctime
 Callback provides (`error`, `fd`) where fd is a file descriptor.
 
 ### fs.read(fd, bufferSize, offset, callback);
+Callback provides (`error`, `uv_buf_t`).
+
+### fs.write(fd, buffer, offset, callback);
 Callback provides (`error`, `uv_buf_t`).
 
 ### fs.close(fd, callback);

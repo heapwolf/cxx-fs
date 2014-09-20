@@ -2,7 +2,8 @@
 
 namespace fs {
 
-  void Filesystem::read(long fd, unsigned int bytes, int64_t offset, Callback<Error, uv_buf_t> cb) {
+
+  void Filesystem::read(uv_file fd, unsigned int bytes, int64_t offset, Callback<Error, uv_buf_t> cb) {
 
     uv_fs_t read_req;
     uv_buf_t buffer;
@@ -35,7 +36,36 @@ namespace fs {
     }
   }
 
-  void Filesystem::open(const char* path, Callback<Error, long> cb) {
+
+  void Filesystem::write(uv_file fd, uv_buf_t buffer, int64_t offset, Callback<Error> cb) {
+
+    uv_fs_t write_req;
+    Error err;
+
+    static function<void(uv_fs_t* req)> on_write;
+
+    on_write = [&](uv_fs_t* req) {
+      auto result = req->result;
+      uv_fs_req_cleanup(req);
+
+      if (result < 0) {
+        err.message = uv_err_name(result);
+        err.code = result;
+      }
+      cb(err);
+    };
+
+    uv_fs_write(UV_LOOP, &write_req, fd, &buffer, 1, offset, [](uv_fs_t* req) {
+      on_write(req);
+    });
+
+    if (!running) {
+      uv_run(UV_LOOP, UV_RUN_DEFAULT);
+    }
+  }
+
+
+  void Filesystem::open(const char* path, int flags, int mode, Callback<Error, uv_file> cb) {
 
     uv_fs_t open_req;
     static function<void(uv_fs_t* req)> on_open;
@@ -45,18 +75,14 @@ namespace fs {
       auto result = req->result;
       uv_fs_req_cleanup(req);
 
-      if (result != -1) {
-        cb(err, result);
-      }
-      else {
+      if (result == -1) {
         err.message = uv_err_name(result);
         err.code = result;
- 
-        cb(err, 0);
       }
+      cb(err, result);
     };
 
-    uv_fs_open(UV_LOOP, &open_req, "./test.txt", 0, 0, [](uv_fs_t* req) {
+    uv_fs_open(UV_LOOP, &open_req, path, flags, mode, [](uv_fs_t* req) {
       on_open(req);
     });
 
@@ -65,7 +91,8 @@ namespace fs {
     }
   }
 
-  void Filesystem::close(long fd, Callback<Error> cb) {
+
+  void Filesystem::close(uv_file fd, Callback<Error> cb) {
     uv_fs_t close_req;
     static function<void(uv_fs_t* req)> on_close;
     Error err;
@@ -87,6 +114,7 @@ namespace fs {
       uv_run(UV_LOOP, UV_RUN_DEFAULT);
     }
   }
+
 
   void Filesystem::stat(const char* path, Callback<Error, Stats> cb) {
 
@@ -136,7 +164,8 @@ namespace fs {
     }
   }
 
-  void Filesystem::readFile(const char* path, Callback<Error, string> cb) {
+
+  void Filesystem::readFile(const char* path, ReadOptions opts, Callback<Error, string> cb) {
 
     stat(path, [&](auto err, auto stats) {
 
@@ -147,7 +176,7 @@ namespace fs {
 
       auto size = stats.size;
 
-      open(path, [&](auto err, auto fd) {
+      open(path, opts.flags, opts.mode, [&](auto err, auto fd) {
 
         if (err) {
           cb(err, "");
@@ -180,10 +209,46 @@ namespace fs {
 
     });
 
-    if (!running) {
-      uv_run(UV_LOOP, UV_RUN_DEFAULT);
-    }
   }
+
+
+  void Filesystem::readFile(const char* path, Callback<Error, string> cb) {
+    ReadOptions opts;
+    readFile(path, opts, cb);
+  }
+
+
+  void Filesystem::writeFile(const char* path, Buffer buffer, WriteOptions opts, Callback<Error> cb) {
+
+    open(path, opts.flags, opts.mode, [&](auto err, auto fd) {
+
+      if (err) {
+        cb(err);
+        return;
+      }
+
+      int offset = -1;
+      write(fd, buffer.data, -1, [&](auto err) {
+      
+        if (err) {
+          cb(err);
+          return;
+        }
+
+        close(fd, cb);
+
+      });
+    });
+
+  }
+
+
+  void Filesystem::writeFile(const char* path, Buffer buffer, Callback<Error> cb) {
+    WriteOptions opts;
+    writeFile(path, buffer, opts, cb);
+  }
+
+
 
 } // namespace fs
 

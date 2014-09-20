@@ -14,6 +14,10 @@ int main() {
       return;
     }
 
+    fs.writeFile("out.txt", Buffer("hello"), [&](auto err) {
+      cout << "OK" << endl;
+    });
+
     cout << data << endl;
   });
 }
