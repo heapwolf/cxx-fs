@@ -2,13 +2,22 @@
 
 namespace fs {
 
+  // @TODO
+  // explore this windows bug...
+  //
+  // #if 0
+  //   //It will crash on Windows7, but work on Linux
+  //   uv_write_t write_req;
+  // #else
+  //   uv_write_t *write_req = new uv_write_t();
+  // #endif
 
-  void Filesystem::read(uv_file fd, unsigned int bytes, int64_t offset, Callback<Error, uv_buf_t> cb) {
+  void Filesystem::read(uv_file fd, int64_t bytes, int64_t offset, Callback<Error, uv_buf_t> cb) {
 
     uv_fs_t read_req;
     uv_buf_t buffer;
-    char *buf = (char *) malloc(bytes);
-    buffer = uv_buf_init(buf, sizeof(buf));
+    buffer.base = (char *) malloc(bytes);
+    buffer.len = bytes;
     Error err;
 
     static function<void(uv_fs_t* req)> on_read;
@@ -27,7 +36,7 @@ namespace fs {
       }
     };
 
-    uv_fs_read(UV_LOOP, &read_req, fd, &buffer, buffer.len, offset, [](uv_fs_t* req) {
+    uv_fs_read(UV_LOOP, &read_req, fd, &buffer, 1, offset, [](uv_fs_t* req) {
       on_read(req);
     });
 
@@ -173,7 +182,7 @@ namespace fs {
         cb(err, "");
         return;
       }
-
+ 
       auto size = stats.size;
 
       open(path, opts.flags, opts.mode, [&](auto err, auto fd) {
@@ -190,9 +199,17 @@ namespace fs {
         reader = [&]() {
 
           if (offset < size) {
-            read(fd, MAGIC_BUFFER_SIZE, offset, [&](auto err, auto buf) {
-              offset += (int64_t) buf.len;
-              ss << buf.base;
+            auto readsize = MAGIC_BUFFER_SIZE;
+            auto diff = size - offset;
+
+            if (readsize > diff) {
+              readsize = diff;
+            }
+
+            read(fd, size, 0, [&](auto err, auto buf) {
+              offset = offset + buf.len;
+              ss << string(buf.base);
+              free(buf.base);
               reader();
             });
             return;

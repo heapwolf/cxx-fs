@@ -105,7 +105,7 @@ namespace fs {
       //
       void stat(const char*, Callback<Error, Stats>);
       void open(const char*, int, int, Callback<Error, uv_file>);
-      void read(uv_file, unsigned int, int64_t, Callback<Error, uv_buf_t>);
+      void read(uv_file, int64_t, int64_t, Callback<Error, uv_buf_t>);
       void write(uv_file, uv_buf_t, int64_t, Callback<Error>);
       void close(uv_file fd, Callback<Error>);
 

@@ -13,12 +13,13 @@ int main() {
       cout << err.message << endl;
       return;
     }
+    
+    cout << data << endl;
 
     fs.writeFile("out.txt", Buffer("hello"), [&](auto err) {
       cout << "OK" << endl;
     });
 
-    cout << data << endl;
   });
 }
 
