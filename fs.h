@@ -67,8 +67,12 @@ namespace fs {
       uv_buf_t data;
 
       Buffer(string s) {
-        char* cstr = (char*) s.c_str();
-        data = uv_buf_init(cstr, sizeof(cstr));
+
+        data.base = (char*) s.c_str();
+        data.len = s.size();
+ 
+        //char* cstr = (char*) s.c_str();
+        //data = uv_buf_init(cstr, sizeof(cstr));
       }
 
       Buffer(int size) {

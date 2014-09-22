@@ -206,7 +206,7 @@ namespace fs {
               readsize = diff;
             }
 
-            read(fd, size, 0, [&](auto err, auto buf) {
+            read(fd, size, offset, [&](auto err, auto buf) {
               offset = offset + buf.len;
               ss << string(buf.base);
               free(buf.base);
@@ -216,7 +216,7 @@ namespace fs {
           }
           else {
             close(fd, [&](auto err) {
-              cb(err, ss.str());
+              cb(err, ss.str().substr(0, size));
             });
           }
         }; 
