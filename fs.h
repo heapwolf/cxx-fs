@@ -57,38 +57,14 @@ namespace fs {
       }
   };
 
-  //
-  // @TODO
-  // Probably move this into another library and add
-  // all the fluffy methods for concat, copy, etc.
-  //
-  class Buffer {
-    public:
-      uv_buf_t data;
-
-      Buffer(string s) {
-
-        data.base = (char*) s.c_str();
-        data.len = s.size();
-      }
-
-      Buffer(int size) {
-        char cstr[size];
-        data = uv_buf_init(cstr, sizeof(cstr));
-      }
- 
-      ~Buffer() {
-      }
-  };
-
   struct ReadOptions {
     int flags = O_CREAT | O_RDWR;
     int mode = S_IRUSR | S_IWUSR;
   };
 
   struct WriteOptions {
-    int flags = O_WRONLY | O_CREAT;
-    int mode = S_IRUSR | S_IWUSR;
+    int flags = O_WRONLY | O_CREAT | O_TRUNC;
+    int mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
   };
 
   class Filesystem {
@@ -116,8 +92,10 @@ namespace fs {
       void readFile(const char*, Callback<Error, string>);
       void readFile(const char*, ReadOptions, Callback<Error, string>);
 
-      void writeFile(const char*, Buffer, Callback<Error>);
-      void writeFile(const char*, Buffer, WriteOptions, Callback<Error>);
+      void writeFile(const char*, string, Callback<Error>);
+      void writeFile(const char*, string, WriteOptions, Callback<Error>);
+      void writeFile(const char*, uv_buf_t, Callback<Error>);
+      void writeFile(const char*, uv_buf_t, WriteOptions, Callback<Error>);
 
       Filesystem() {
         UV_LOOP = uv_default_loop();

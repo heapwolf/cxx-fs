@@ -235,7 +235,7 @@ namespace fs {
   }
 
 
-  void Filesystem::writeFile(const char* path, Buffer buffer, WriteOptions opts, Callback<Error> cb) {
+  void Filesystem::writeFile(const char* path, uv_buf_t buffer, WriteOptions opts, Callback<Error> cb) {
 
     open(path, opts.flags, opts.mode, [&](auto err, auto fd) {
 
@@ -244,9 +244,8 @@ namespace fs {
         return;
       }
 
-      int offset = -1;
-      write(fd, buffer.data, -1, [&](auto err) {
-      
+      write(fd, buffer, 0, [&](auto err) {
+
         if (err) {
           cb(err);
           return;
@@ -260,12 +259,27 @@ namespace fs {
   }
 
 
-  void Filesystem::writeFile(const char* path, Buffer buffer, Callback<Error> cb) {
+  void Filesystem::writeFile(const char* path, uv_buf_t buffer, Callback<Error> cb) {
     WriteOptions opts;
     writeFile(path, buffer, opts, cb);
   }
 
 
+  void Filesystem::writeFile(const char* path, string s, Callback<Error> cb) {
+    WriteOptions opts;
+    writeFile(path, s, opts, cb);
+  }
+
+
+  void Filesystem::writeFile(const char* path, string s, WriteOptions opts, Callback<Error> cb) {
+
+    char b[s.size()];
+    strcpy(b, s.c_str());
+    uv_buf_t buffer;
+    buffer = uv_buf_init(b, sizeof(b));
+  
+    writeFile(path, buffer, opts, cb);  
+  }
 
 } // namespace fs
 
