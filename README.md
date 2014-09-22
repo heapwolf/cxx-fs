@@ -57,6 +57,9 @@ double stats.mtime
 double stats.ctime
 ```
 
+### fs.cwd();
+Returns a string that represents the current working directory.
+
 ### fs.open(path, callback);
 Callback provides (`error`, `fd`) where fd is a file descriptor.
 
