@@ -57,6 +57,9 @@ namespace fs {
       }
   };
 
+  //
+  // Some reasonable defaults for Read and Write options...
+  //
   struct ReadOptions {
     int flags = O_CREAT | O_RDWR;
     int mode = S_IRUSR | S_IWUSR;
@@ -81,7 +84,15 @@ namespace fs {
       // basic functions...
       //
       string cwd();
+
       void stat(const char*, Callback<Error, Stats>);
+      Stats statSync(const char* path);
+
+      Error mkdirSync(const char* path);
+      Error mkdirSync(const char* path, int mode);
+
+      Error rmdirSync(const char* path);
+
       void open(const char*, int, int, Callback<Error, uv_file>);
       void read(uv_file, int64_t, int64_t, Callback<Error, uv_buf_t>);
       void write(uv_file, uv_buf_t, int64_t, Callback<Error>);
@@ -92,6 +103,9 @@ namespace fs {
       //
       void readFile(const char*, Callback<Error, string>);
       void readFile(const char*, ReadOptions, Callback<Error, string>);
+
+      uv_buf_t readFileSync(const char*);
+      //string readFileSync(const char*);
 
       void writeFile(const char*, string, Callback<Error>);
       void writeFile(const char*, string, WriteOptions, Callback<Error>);

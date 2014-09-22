@@ -1,5 +1,6 @@
 #include "../fs.h"
 #include <assert.h>
+#include <unistd.h>
 
 using namespace std;
 using namespace fs;
@@ -22,6 +23,26 @@ int main() {
   Filesystem fs;
 
   cout << fs.cwd() << endl;
+
+
+  auto st = fs.statSync("./test.cc");
+  ASSERT("this file should be found by statSync", st.mode != 0);
+  st = fs.statSync("..");
+  ASSERT("the parent directory should be found by statSync", st.mode != 0);
+  st = fs.statSync("../bla");
+  ASSERT("a directory that does not exist should not be found by statSync", st.mode == 0);
+
+
+  Error createError = fs.mkdirSync("./foo");
+  ASSERT("directory was created", createError == false);
+  st = fs.statSync("./foo");
+  ASSERT("directory exists", st.mode != 0);
+
+  Error deleteError = fs.rmdirSync("./foo");
+  ASSERT("directory was deleted", deleteError == false);
+  st = fs.statSync("./foo");
+  ASSERT("directory no longer exists", st.mode == 0);
+
 
   fs.readFile("test.txt", [&](auto err, auto data) {
 
@@ -60,9 +81,11 @@ string s = "#include <functional>\n"
 "  }\n";
 
     fs.writeFile("out.txt", s, [&](auto err) {
-      cout << "OK" << endl;
+      fs.readFile("out.txt", [&](auto err, auto data) {
+        ASSERT("out.txt should be exactly the same", s.length() == data.length());
+      });
     });
-
   });
+
 }
 

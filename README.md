@@ -60,6 +60,12 @@ double stats.ctime
 ### fs.cwd();
 Returns a string that represents the current working directory.
 
+### fs.mkdirSync(path, [mode]);
+Create a directory sync, optionally pass the mode as an octal.
+
+### fs.rmdirSync(path);
+Remove a direcory sync.
+
 ### fs.open(path, callback);
 Callback provides (`error`, `fd`) where fd is a file descriptor.
 
