@@ -2,15 +2,22 @@
 
 namespace fs {
 
-  // @TODO
-  // explore this windows bug...
-  //
-  // #if 0
-  //   //It will crash on Windows7, but work on Linux
-  //   uv_write_t write_req;
-  // #else
-  //   uv_write_t *write_req = new uv_write_t();
-  // #endif
+
+  string Filesystem::cwd() {
+    char path[1024];
+    size_t size = sizeof(path);
+    int err = uv_cwd(path, &size);
+    
+    if (err < 0) {
+      //
+      // @TODO
+      // Make this error more useful.
+      //
+      throw runtime_error("could not cwd");
+    }
+    return string(path);
+  }
+
 
   void Filesystem::read(uv_file fd, int64_t bytes, int64_t offset, Callback<Error, uv_buf_t> cb) {
 

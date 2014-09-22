@@ -21,6 +21,8 @@ int main() {
 
   Filesystem fs;
 
+  cout << fs.cwd() << endl;
+
   fs.readFile("test.txt", [&](auto err, auto data) {
 
     ASSERT("a file should be opened without an error", err == false);

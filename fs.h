@@ -80,6 +80,7 @@ namespace fs {
       // 
       // basic functions...
       //
+      string cwd();
       void stat(const char*, Callback<Error, Stats>);
       void open(const char*, int, int, Callback<Error, uv_file>);
       void read(uv_file, int64_t, int64_t, Callback<Error, uv_buf_t>);
