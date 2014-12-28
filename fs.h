@@ -75,14 +75,6 @@ namespace fs {
       uv_loop_t* UV_LOOP;
       bool running = false;
 
-      //
-      // @TODO
-      // Make an Error class that can have message and error code props,
-      // maybe even add the callstack into it.
-
-      // 
-      // basic functions...
-      //
       string cwd();
 
       void stat(const char*, Callback<Error, Stats>);
@@ -94,18 +86,24 @@ namespace fs {
       Error rmdirSync(const char* path);
 
       void open(const char*, int, int, Callback<Error, uv_file>);
+      int openSync(const char*, int, int);
+
       void read(uv_file, int64_t, int64_t, Callback<Error, uv_buf_t>);
+      int readSync(uv_file fd, uv_buf_t* buffer, int64_t offset, int64_t bytes);
+
       void write(uv_file, uv_buf_t, int64_t, Callback<Error>);
+      
       void close(uv_file fd, Callback<Error>);
+      int closeSync(uv_file fd);
 
       // 
-      // fancy fluffy functions...
+      // Higher level functions
       //
       void readFile(const char*, Callback<Error, string>);
       void readFile(const char*, ReadOptions, Callback<Error, string>);
 
+      uv_buf_t readFileSync(const char*, ReadOptions);
       uv_buf_t readFileSync(const char*);
-      //string readFileSync(const char*);
 
       void writeFile(const char*, string, Callback<Error>);
       void writeFile(const char*, string, WriteOptions, Callback<Error>);

@@ -52,6 +52,28 @@ namespace fs {
     }
   }
 
+
+  //
+  //
+  //
+  int Filesystem::readSync(uv_file fd, uv_buf_t* buffer, int64_t offset, int64_t bytes) {
+
+    uv_fs_t read_req;
+    int r = uv_fs_read(UV_LOOP, &read_req, fd, buffer, 1, offset, NULL);
+
+    if (!running) {
+      uv_run(UV_LOOP, UV_RUN_DEFAULT);
+    }
+
+    if (read_req.result < 0) {
+      auto error = string(uv_err_name(read_req.result));
+      throw runtime_error("READ: " + error);
+    }
+
+    return r;
+  } 
+
+
   //
   //
   //
@@ -111,6 +133,28 @@ namespace fs {
     }
   }
 
+
+  //
+  //
+  //
+  int Filesystem::openSync(const char* path, int flags, int mode) {
+
+    uv_fs_t open_req;
+    int result = uv_fs_open(UV_LOOP, &open_req, path, flags, mode, NULL);
+    uv_fs_req_cleanup(&open_req);
+
+    if (!running) {
+      uv_run(UV_LOOP, UV_RUN_DEFAULT);
+    }
+
+    if (open_req.result < 0) {
+      auto subject = string(path);
+      auto error = string(uv_err_name(open_req.result));
+      throw runtime_error("OPEN: " + error + " \"" + subject + "\"");
+    }
+    return result;
+  };
+
   //
   //
   //
@@ -136,6 +180,31 @@ namespace fs {
       uv_run(UV_LOOP, UV_RUN_DEFAULT);
     }
   }
+
+  
+  //
+  //
+  //
+  int Filesystem::closeSync(uv_file fd) {
+    uv_fs_t close_req;
+    int r = uv_fs_close(UV_LOOP, &close_req, fd, NULL);
+
+    if (!running) {
+      uv_run(UV_LOOP, UV_RUN_DEFAULT);
+    }
+
+    if (close_req.result < 0) {
+      auto error = string(uv_err_name(close_req.result));
+      throw runtime_error("CLOSE: " + error);
+    }
+
+    if (!running) {
+      uv_run(UV_LOOP, UV_RUN_DEFAULT);
+    }
+
+    return r;
+  }
+
 
   //
   // Used by both `stat` and `statSync` to build a stats object.
@@ -172,10 +241,14 @@ namespace fs {
     uv_fs_t stat_req;
     int r = uv_fs_stat(UV_LOOP, &stat_req, path, NULL);
 
+    if (!running) {
+      uv_run(UV_LOOP, UV_RUN_DEFAULT);
+    }
+
     if (stat_req.result < 0) {
       auto subject = string(path);
-      auto error = uv_err_name(stat_req.result);
-      throw runtime_error("STAT: " + string(error) + " \"" + subject + "\"");
+      auto error = string(uv_err_name(stat_req.result));
+      throw runtime_error("STAT: " + error + " \"" + subject + "\"");
     }
 
     auto stats = buildStats(&stat_req);
@@ -260,6 +333,32 @@ namespace fs {
     }
     return err;
   }
+
+  //
+  //
+  //
+  uv_buf_t Filesystem::readFileSync(const char* path) {
+    ReadOptions opts;
+    return readFileSync(path, opts);
+  }
+
+
+  //
+  //
+  //
+  uv_buf_t Filesystem::readFileSync(const char* path, ReadOptions opts) {
+    Stats st = statSync(path);
+    int fd = openSync(path, opts.flags, opts.mode);
+
+    uv_buf_t buffer;
+    buffer.base = (char *) malloc(st.size);
+    buffer.len = st.size;
+
+    readSync(fd, &buffer, -1, st.size);
+    closeSync(fd);
+    return buffer;
+  }
+
 
   //
   //

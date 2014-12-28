@@ -55,6 +55,7 @@ int main() {
     ASSERT("a directory that does not exist should not be found by statSync", true);
   }
 
+
   Error createError = fs.mkdirSync("./foo");
   ASSERT("directory was created", createError == false);
   st = fs.statSync("./foo");
@@ -68,6 +69,12 @@ int main() {
   catch(runtime_error &e) {
     ASSERT("directory no longer exists", true);
   }
+
+
+  st = fs.statSync("./test.txt");
+  uv_buf_t buf = fs.readFileSync("./test.txt");
+  ASSERT("stat size should be the buf size returned by readFileSync", st.size == buf.len);
+
 
   fs.readFile("test.txt", [&](auto err, auto data) {
 
