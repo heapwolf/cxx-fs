@@ -16,6 +16,14 @@ namespace fs {
     return string(path);
   }
 
+  uv_buf_t Filesystem::createBuffer(string s) {
+    char b[s.size()];
+    strcpy(b, s.c_str());
+    uv_buf_t buffer;
+    buffer = uv_buf_init(b, sizeof(b));
+    return buffer;
+  }
+
   //
   //
   //
@@ -75,7 +83,8 @@ namespace fs {
 
 
   //
-  //
+  // TODO
+  // This should accept length as well
   //
   void Filesystem::write(uv_file fd, uv_buf_t buffer, int64_t offset, Callback<Error> cb) {
 
@@ -103,6 +112,28 @@ namespace fs {
       uv_run(UV_LOOP, UV_RUN_DEFAULT);
     }
   }
+
+
+  //
+  //
+  //
+  int Filesystem::writeSync(uv_file fd, uv_buf_t* buffer, int64_t offset, int64_t length) {
+
+    uv_fs_t write_req;
+    int r = uv_fs_write(UV_LOOP, &write_req, fd, buffer, 1, offset, NULL);
+
+    if (!running) {
+      uv_run(UV_LOOP, UV_RUN_DEFAULT);
+    }
+
+    if (write_req.result < 0) {
+      auto error = string(uv_err_name(write_req.result));
+      throw runtime_error("WRITE: " + error);
+    }
+
+    return r;
+  } 
+
 
   //
   //
@@ -448,8 +479,28 @@ namespace fs {
 
       });
     });
-
   }
+
+
+  //
+  //
+  //
+  int Filesystem::writeFileSync(const char* path, uv_buf_t* buffer) {
+    WriteOptions opts;
+    return writeFileSync(path, buffer, opts);
+  }
+
+
+  //
+  //
+  //
+  int Filesystem::writeFileSync(const char* path, uv_buf_t* buffer, WriteOptions opts) {
+    int fd = openSync(path, opts.flags, opts.mode);
+    int bytesWritten = writeSync(fd, buffer, -1, buffer->len);
+    closeSync(fd);
+    return bytesWritten;
+  }
+
 
   //
   //

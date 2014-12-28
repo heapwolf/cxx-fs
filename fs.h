@@ -76,6 +76,7 @@ namespace fs {
       bool running = false;
 
       string cwd();
+      uv_buf_t createBuffer(string s);
 
       void stat(const char*, Callback<Error, Stats>);
       Stats statSync(const char* path);
@@ -92,7 +93,8 @@ namespace fs {
       int readSync(uv_file fd, uv_buf_t* buffer, int64_t offset, int64_t bytes);
 
       void write(uv_file, uv_buf_t, int64_t, Callback<Error>);
-      
+      int writeSync(uv_file fd, uv_buf_t* buffer, int64_t offset, int64_t length);
+
       void close(uv_file fd, Callback<Error>);
       int closeSync(uv_file fd);
 
@@ -101,7 +103,6 @@ namespace fs {
       //
       void readFile(const char*, Callback<Error, string>);
       void readFile(const char*, ReadOptions, Callback<Error, string>);
-
       uv_buf_t readFileSync(const char*, ReadOptions);
       uv_buf_t readFileSync(const char*);
 
@@ -109,6 +110,8 @@ namespace fs {
       void writeFile(const char*, string, WriteOptions, Callback<Error>);
       void writeFile(const char*, uv_buf_t, Callback<Error>);
       void writeFile(const char*, uv_buf_t, WriteOptions, Callback<Error>);
+      int writeFileSync(const char* path, uv_buf_t* buffer);
+      int writeFileSync(const char* path, uv_buf_t* buffer, WriteOptions opts);
 
       Filesystem() {
         UV_LOOP = uv_default_loop();

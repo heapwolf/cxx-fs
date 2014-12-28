@@ -36,14 +36,56 @@ int main() {
 
   signal(SIGSEGV, backtrace_handler);
 
+  // 
+  // some crazy random string.
+  //
+  string s = "#include <functional>\n"
+  "#include <iostream>\n"
+  "    class {\n"
+  "    class {\n"
+  "#define place string(\"world\")\n"
+  "\n"
+  "#define bar()\\\n"
+  "      cout << 10 << endl;\n"
+  "\n"
+  "    public:\n"
+  "      string message = \"hello \" + place;\n"
+  "\n"
+  "#undef place\n"
+  "#undef bar\n"
+  "    } b;\n"
+  "\n"
+  "\n"
+  "      public:\n"
+  "      void print() {\n"
+  "            cout << b.message << endl;\n"
+  "              }\n"
+  "\n"
+  "    } bla;\n"
+  "\n"
+  "\n"
+  "  int main() {\n"
+  "\n"
+  "      bla.print();\n"
+  "  }\n";
+
+  //
+  // sanity test.
+  //
   ASSERT("sanity: true is false", true == false);
   ASSERT("sanity: true is true", true == true);
 
   Filesystem fs;
 
+  //
+  // get the currect working directory.
+  //
   cout << fs.cwd() << endl;
 
 
+  //
+  // stat
+  //
   auto st = fs.statSync("./test.cc");
   ASSERT("this file should be found by statSync", st.mode != 0);
   st = fs.statSync("..");
@@ -55,12 +97,17 @@ int main() {
     ASSERT("a directory that does not exist should not be found by statSync", true);
   }
 
-
+  //
+  // mkdir
+  //
   Error createError = fs.mkdirSync("./foo");
   ASSERT("directory was created", createError == false);
   st = fs.statSync("./foo");
   ASSERT("directory exists", st.mode != 0);
 
+  //
+  // rmdir
+  //
   Error deleteError = fs.rmdirSync("./foo");
   ASSERT("directory was deleted", deleteError == false);
   try {
@@ -70,47 +117,28 @@ int main() {
     ASSERT("directory no longer exists", true);
   }
 
+  //
+  // writeSync
+  //
+  auto buffer = fs.createBuffer(s);
+  int bytesWritten = fs.writeFileSync("./testwrite.txt", &buffer);
+  ASSERT("bytesWritten should be the size of the string written to writeFileSync", bytesWritten == s.size());
 
+  //
+  // readSync
+  //
   st = fs.statSync("./test.txt");
   uv_buf_t buf = fs.readFileSync("./test.txt");
   ASSERT("stat size should be the buf size returned by readFileSync", st.size == buf.len);
 
-
+  //
+  // read and write
+  //
   fs.readFile("test.txt", [&](auto err, auto data) {
 
     ASSERT("a file should be opened without an error", err == false);
     ASSERT("the length of the data returned by the callback"
            "should match the length of the file", data.length() == 5834);
-
-string s = "#include <functional>\n"
-"#include <iostream>\n"
-"    class {\n"
-"    class {\n"
-"#define place string(\"world\")\n"
-"\n"
-"#define bar()\\\n"
-"      cout << 10 << endl;\n"
-"\n"
-"    public:\n"
-"      string message = \"hello \" + place;\n"
-"\n"
-"#undef place\n"
-"#undef bar\n"
-"    } b;\n"
-"\n"
-"\n"
-"      public:\n"
-"      void print() {\n"
-"            cout << b.message << endl;\n"
-"              }\n"
-"\n"
-"    } bla;\n"
-"\n"
-"\n"
-"  int main() {\n"
-"\n"
-"      bla.print();\n"
-"  }\n";
 
     fs.writeFile("out.txt", s, [&](auto err) {
       fs.readFile("out.txt", [&](auto err, auto data) {
