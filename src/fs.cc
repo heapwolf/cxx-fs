@@ -170,7 +170,14 @@ namespace fs {
   Stats Filesystem::statSync(const char* path) {
 
     uv_fs_t stat_req;
-    uv_fs_stat(UV_LOOP, &stat_req, path, NULL);
+    int r = uv_fs_stat(UV_LOOP, &stat_req, path, NULL);
+
+    if (stat_req.result < 0) {
+      auto subject = string(path);
+      auto error = uv_err_name(stat_req.result);
+      throw runtime_error("STAT: " + string(error) + " \"" + subject + "\"");
+    }
+
     auto stats = buildStats(&stat_req);
     uv_fs_req_cleanup(&stat_req);
     return stats;

@@ -1,6 +1,10 @@
 #include "../fs.h"
 #include <assert.h>
 #include <unistd.h>
+#include <execinfo.h>
+#include <stdio.h>
+#include <signal.h>
+#include <stdlib.h>
 
 using namespace std;
 using namespace fs;
@@ -14,8 +18,23 @@ using namespace fs;
   } \
 } while(0);
 
+void backtrace_handler(int sig) {
+  void *array[10];
+  size_t size;
+
+  // get void*'s for all entries on the stack
+  size = backtrace(array, 10);
+
+  // print out all the frames to stderr
+  fprintf(stderr, "Error: signal %d:\n", sig);
+  backtrace_symbols_fd(array, size, STDERR_FILENO);
+  exit(1);
+}
+
 
 int main() {
+
+  signal(SIGSEGV, backtrace_handler);
 
   ASSERT("sanity: true is false", true == false);
   ASSERT("sanity: true is true", true == true);
@@ -29,9 +48,12 @@ int main() {
   ASSERT("this file should be found by statSync", st.mode != 0);
   st = fs.statSync("..");
   ASSERT("the parent directory should be found by statSync", st.mode != 0);
-  st = fs.statSync("../bla");
-  ASSERT("a directory that does not exist should not be found by statSync", st.mode == 0);
-
+  try {
+    st = fs.statSync("../bla");
+  }
+  catch(runtime_error &e) {
+    ASSERT("a directory that does not exist should not be found by statSync", true);
+  }
 
   Error createError = fs.mkdirSync("./foo");
   ASSERT("directory was created", createError == false);
@@ -40,9 +62,12 @@ int main() {
 
   Error deleteError = fs.rmdirSync("./foo");
   ASSERT("directory was deleted", deleteError == false);
-  st = fs.statSync("./foo");
-  ASSERT("directory no longer exists", st.mode == 0);
-
+  try {
+    st = fs.statSync("./foo"); 
+  }
+  catch(runtime_error &e) {
+    ASSERT("directory no longer exists", true);
+  }
 
   fs.readFile("test.txt", [&](auto err, auto data) {
 
