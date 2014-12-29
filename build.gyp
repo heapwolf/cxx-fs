@@ -6,7 +6,7 @@
       'product_name': 'nodeuv-fs',
       'type': 'static_library',
       'sources': [
-        'fs.h', 
+        'fs.h',
         './src/fs.cc'
       ],
       'dependencies': [
@@ -17,8 +17,20 @@
       'target_name': 'test',
       'type': 'executable',
       'sources': [
-        './src/fs.cc', 
+        './src/fs.cc',
         './test/test.cc',
+      ],
+      'dependencies': [
+        './deps/libuv/uv.gyp:libuv',
+        'nodeuv-fs'
+      ],
+    },
+    {
+      'target_name': 'sanity',
+      'type': 'executable',
+      'sources': [
+        './src/fs.cc',
+        './test/sanity.cc',
       ],
       'dependencies': [
         './deps/libuv/uv.gyp:libuv',

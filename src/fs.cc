@@ -17,10 +17,9 @@ namespace fs {
   }
 
   uv_buf_t Filesystem::createBuffer(string s) {
-    char b[s.size()];
-    strcpy(b, s.c_str());
-    uv_buf_t buffer;
-    buffer = uv_buf_init(b, sizeof(b));
+
+    static uv_buf_t buffer;
+    buffer = uv_buf_init((char*) s.c_str(), s.length());
     return buffer;
   }
 
@@ -67,17 +66,17 @@ namespace fs {
   int Filesystem::readSync(uv_file fd, uv_buf_t* buffer, int64_t offset, int64_t bytes) {
 
     uv_fs_t read_req;
+
     int r = uv_fs_read(UV_LOOP, &read_req, fd, buffer, 1, offset, NULL);
 
     if (!running) {
       uv_run(UV_LOOP, UV_RUN_DEFAULT);
     }
 
-    if (read_req.result < 0) {
-      auto error = string(uv_err_name(read_req.result));
+    if (r < 0) {
+      auto error = string(uv_err_name(r));
       throw runtime_error("READ: " + error);
     }
-
     return r;
   } 
 
@@ -220,17 +219,9 @@ namespace fs {
     uv_fs_t close_req;
     int r = uv_fs_close(UV_LOOP, &close_req, fd, NULL);
 
-    if (!running) {
-      uv_run(UV_LOOP, UV_RUN_DEFAULT);
-    }
-
     if (close_req.result < 0) {
       auto error = string(uv_err_name(close_req.result));
       throw runtime_error("CLOSE: " + error);
-    }
-
-    if (!running) {
-      uv_run(UV_LOOP, UV_RUN_DEFAULT);
     }
 
     return r;
@@ -254,11 +245,16 @@ namespace fs {
       stats.uid = s->st_uid;
       stats.gid = s->st_gid;
       stats.rdev = s->st_rdev;
-      stats.size = STAT_GET_DOUBLE(size);
-      stats.ino = STAT_GET_DOUBLE(ino);
-      stats.atime = STAT_GET_DATE(atim);
-      stats.mtime = STAT_GET_DATE(mtim);
-      stats.ctime = STAT_GET_DATE(ctim);
+      stats.ino = s->st_ino;
+      stats.size = s->st_size;
+      stats.blksize = s->st_blksize;
+      stats.blocks = s->st_blocks;
+      stats.flags = s->st_flags;
+      stats.gen = s->st_gen;
+      stats.atime = s->st_atim;
+      stats.mtime = s->st_mtim;
+      stats.ctime = s->st_ctim;
+      stats.birthtime = s->st_birthtim;
     }
 
     return stats;
@@ -373,26 +369,28 @@ namespace fs {
     return readFileSync(path, opts);
   }
 
-
   //
   //
   //
   uv_buf_t Filesystem::readFileSync(const char* path, ReadOptions opts) {
     Stats st = statSync(path);
     int fd = openSync(path, opts.flags, opts.mode);
+    int size = st.size;
 
     uv_buf_t buffer;
-    buffer.base = (char *) malloc(st.size);
-    buffer.len = st.size;
+    buffer.base = (char *) malloc(size);
+    buffer.len = size;
 
-    readSync(fd, &buffer, -1, st.size);
+    readSync(fd, &buffer, 0, size);
     closeSync(fd);
     return buffer;
   }
 
 
+
   //
-  //
+  // TODO
+  // this is lame. should be buffers.
   //
   void Filesystem::readFile(const char* path, ReadOptions opts, Callback<Error, string> cb) {
 
@@ -496,7 +494,7 @@ namespace fs {
   //
   int Filesystem::writeFileSync(const char* path, uv_buf_t* buffer, WriteOptions opts) {
     int fd = openSync(path, opts.flags, opts.mode);
-    int bytesWritten = writeSync(fd, buffer, -1, buffer->len);
+    int bytesWritten = writeSync(fd, buffer, 0, buffer->len);
     closeSync(fd);
     return bytesWritten;
   }

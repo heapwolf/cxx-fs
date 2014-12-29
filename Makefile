@@ -1,7 +1,7 @@
 
 DEPS ?= gyp libuv
 
-all: build test
+all: build test sanity
 
 .PHONY: deps
 deps: $(DEPS)
@@ -21,6 +21,10 @@ build: $(DEPS)
 test: ./test/test.cc
 	make -C ./build/ test
 	cp ./build/out/Release/test ./test/test
+
+sanity: ./test/sanity.cc
+	make -C ./build/ sanity
+	cp ./build/out/Release/sanity ./test/sanity
 
 distclean:
 	make clean

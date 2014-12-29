@@ -23,25 +23,23 @@ namespace fs {
   // https://github.com/joyent/node/blob/master/lib/fs.js#L256
   const unsigned int MAGIC_BUFFER_SIZE = 8192;
 
-  #define STAT_GET_DOUBLE(name) \
-    static_cast<double>(s->st_##name)
-
-  #define STAT_GET_DATE(name) \
-    (static_cast<double>(s->st_##name.tv_sec) * 1000) + \
-    (static_cast<double>(s->st_##name.tv_nsec / 1000000))
-
   struct Stats {
-    int dev;
-    int mode;
-    int nlink;
-    int uid;
-    int gid;
-    int rdev;
-    double size;
-    double ino;
-    double atime;
-    double mtime;
-    double ctime;
+    uint64_t dev;
+    uint64_t mode;
+    uint64_t nlink;
+    uint64_t uid;
+    uint64_t gid;
+    uint64_t rdev;
+    uint64_t ino;
+    uint64_t size;
+    uint64_t blksize;
+    uint64_t blocks;
+    uint64_t flags;
+    uint64_t gen;
+    uv_timespec_t atime;
+    uv_timespec_t mtime;
+    uv_timespec_t ctime;
+    uv_timespec_t birthtime;
   };
 
   template <typename... Args>

@@ -33,14 +33,17 @@ Creates a loop for file operations.
 
 ## METHODS
 
+### fs.cwd();
+Returns a string that represents the current working directory.
+
 ### fs.readFile(path, callback);
 Stats, Opens, reads whole file, callback provides (`error`, `streambuf`).
 
-### fs.writeFile(path, buffer, callback);
-Opens, writes whole buffer, callback provides (`error`).
-
 ### fs.readFileSync(path);
 Stats, Opens, reads whole file sync.
+
+### fs.writeFile(path, buffer, callback);
+Opens, writes whole buffer, callback provides (`error`).
 
 ### fs.writeFileSync(path, buffer);
 Opens, writes whole buffer sync.
@@ -53,21 +56,23 @@ the following members...
 Returns a Stats object.
 
 ```cpp
-int stats.dev
-int stats.mode
-int stats.nlink
-int stats.uid
-int stats.gid
-int stats.rdev
-double stats.size
-double stats.ino
-double stats.atime
-double stats.mtime
-double stats.ctime
+uint64_t dev;
+uint64_t mode;
+uint64_t nlink;
+uint64_t uid;
+uint64_t gid;
+uint64_t rdev;
+uint64_t ino;
+uint64_t size;
+uint64_t blksize;
+uint64_t blocks;
+uint64_t flags;
+uint64_t gen;
+uv_timespec_t atime;
+uv_timespec_t mtime;
+uv_timespec_t ctime;
+uv_timespec_t birthtime;
 ```
-
-### fs.cwd();
-Returns a string that represents the current working directory.
 
 ### fs.mkdirSync(path, [mode]);
 Create a directory sync, optionally pass the mode as an octal.
@@ -82,6 +87,9 @@ Callback provides (`error`, `fd`) where fd is a file descriptor.
 Open a file sync, optionally pass the mode as an octal.
 
 ### fs.read(fd, bufferSize, offset, callback);
+Callback provides (`error`, `uv_buf_t`).
+
+### fs.readSync(fd, bufferSize, offset);
 Callback provides (`error`, `uv_buf_t`).
 
 ### fs.write(fd, buffer, offset, callback);

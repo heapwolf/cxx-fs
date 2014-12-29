@@ -18,28 +18,9 @@ using namespace fs;
   } \
 } while(0);
 
-void backtrace_handler(int sig) {
-  void *array[10];
-  size_t size;
-
-  // get void*'s for all entries on the stack
-  size = backtrace(array, 10);
-
-  // print out all the frames to stderr
-  fprintf(stderr, "Error: signal %d:\n", sig);
-  backtrace_symbols_fd(array, size, STDERR_FILENO);
-  exit(1);
-}
-
-
 int main() {
 
-  signal(SIGSEGV, backtrace_handler);
-
-  // 
-  // some crazy random string.
-  //
-  string s = "#include <functional>\n"
+  string sillystring = "#include <functional>\n"
   "#include <iostream>\n"
   "    class {\n"
   "    class {\n"
@@ -74,7 +55,7 @@ int main() {
   //
   ASSERT("sanity: true is false", true == false);
   ASSERT("sanity: true is true", true == true);
-
+ 
   Filesystem fs;
 
   //
@@ -120,16 +101,21 @@ int main() {
   //
   // writeSync
   //
-  auto buffer = fs.createBuffer(s);
-  int bytesWritten = fs.writeFileSync("./testwrite.txt", &buffer);
-  ASSERT("bytesWritten should be the size of the string written to writeFileSync", bytesWritten == s.size());
+  //static auto writeBuffer = fs.createBuffer(s);
+
+  static uv_buf_t writeBuffer;
+  writeBuffer = uv_buf_init((char*) sillystring.c_str(), sillystring.length());
+  int bytesWritten = fs.writeFileSync("./testwrite.txt", &writeBuffer);
+  ASSERT("bytesWritten should be the size of the string written to writeFileSync", bytesWritten == sillystring.size());
 
   //
   // readSync
   //
   st = fs.statSync("./test.txt");
-  uv_buf_t buf = fs.readFileSync("./test.txt");
-  ASSERT("stat size should be the buf size returned by readFileSync", st.size == buf.len);
+  static uv_buf_t readBuffer;
+  readBuffer = fs.readFileSync("./test.txt");
+  ASSERT("stat size should be the buf size returned by readFileSync", st.size == readBuffer.len);
+  ASSERT("strings should be the same", bool(sillystring == readBuffer.base));
 
   //
   // read and write
@@ -137,12 +123,10 @@ int main() {
   fs.readFile("test.txt", [&](auto err, auto data) {
 
     ASSERT("a file should be opened without an error", err == false);
-    ASSERT("the length of the data returned by the callback"
-           "should match the length of the file", data.length() == 5834);
 
-    fs.writeFile("out.txt", s, [&](auto err) {
+    fs.writeFile("out.txt", sillystring, [&](auto err) {
       fs.readFile("out.txt", [&](auto err, auto data) {
-        ASSERT("out.txt should be exactly the same", s.length() == data.length());
+        ASSERT("out.txt should be exactly the same", sillystring.length() == data.length());
       });
     });
   });
