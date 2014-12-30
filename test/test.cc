@@ -103,19 +103,17 @@ int main() {
   //
   //static auto writeBuffer = fs.createBuffer(s);
 
-  static uv_buf_t writeBuffer;
-  writeBuffer = uv_buf_init((char*) sillystring.c_str(), sillystring.length());
-  int bytesWritten = fs.writeFileSync("./testwrite.txt", &writeBuffer);
+  Buffer writeBuffer(sillystring);
+  int bytesWritten = fs.writeFileSync("./testwrite.txt", writeBuffer);
   ASSERT("bytesWritten should be the size of the string written to writeFileSync", bytesWritten == sillystring.size());
 
   //
   // readSync
   //
   st = fs.statSync("./test.txt");
-  static uv_buf_t readBuffer;
-  readBuffer = fs.readFileSync("./test.txt");
-  ASSERT("stat size should be the buf size returned by readFileSync", st.size == readBuffer.len);
-  ASSERT("strings should be the same", bool(sillystring == readBuffer.base));
+  Buffer readBuffer = fs.readFileSync("./test.txt");
+  ASSERT("stat size should be the buf size returned by readFileSync", st.size == readBuffer.length());
+  ASSERT("strings should be the same", bool(sillystring == readBuffer.toString()));
 
   //
   // read and write

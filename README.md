@@ -25,13 +25,13 @@ int main() {
 }
 ```
 
-# API
+# Filesystem
 
 ## CONSTRUCTOR
 ### Filesystem fs;
 Creates a loop for file operations.
 
-## METHODS
+## INSTANCE METHODS
 
 ### fs.cwd();
 Returns a string that represents the current working directory.
@@ -40,13 +40,13 @@ Returns a string that represents the current working directory.
 Stats, Opens, reads whole file, callback provides (`error`, `streambuf`).
 
 ### fs.readFileSync(path);
-Stats, Opens, reads whole file sync.
+Stats, Opens, reads whole file and returns an instance of `Buffer`.
 
 ### fs.writeFile(path, buffer, callback);
 Opens, writes whole buffer, callback provides (`error`).
 
 ### fs.writeFileSync(path, buffer);
-Opens, writes whole buffer sync.
+Opens, writes whole value from the instance of `Buffer`.
 
 ### fs.stat(path, callback);
 Callback provides (`error`, `stats`), where stats is a struct containing 
@@ -96,7 +96,7 @@ Callback provides (`error`, `uv_buf_t`).
 Callback provides (`error`, `uv_buf_t`).
 
 ### fs.writeSync(fd, buffer, offset, length);
-Write to a file sync, returns the number of bytes written.
+Write an instance of `Buffer` to a file, returns the number of bytes written.
 
 ### fs.close(fd, callback);
 Close a file. Callback provides (`error`).
@@ -104,6 +104,17 @@ Close a file. Callback provides (`error`).
 ### fs.closeSync(fd);
 Close a file sync.
 
-### fs.createBuffer(string);
-Returns a new `uv_buf_t` from a string.
+# Buffers
+A little sugar on top of `uv_buf_t`.
+
+## CONSTRUCTOR
+### Buffer buf(string);
+### Buffer buf();
+### Buffer buf(size);
+
+## INSTANCE METHODS
+### buf.toString();
+
+## STATIC MEMBERS
+### buf.data
 

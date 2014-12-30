@@ -2,6 +2,11 @@
 
 namespace fs {
 
+  Buffer& Buffer::operator= (const Buffer &buf) {
+    data = buf.data;
+    return *this;
+  }
+
   //
   // get the current working directory.
   //
@@ -116,10 +121,10 @@ namespace fs {
   //
   //
   //
-  int Filesystem::writeSync(uv_file fd, uv_buf_t* buffer, int64_t offset, int64_t length) {
+  int Filesystem::writeSync(uv_file fd, Buffer buffer, int64_t offset, int64_t length) {
 
     uv_fs_t write_req;
-    int r = uv_fs_write(UV_LOOP, &write_req, fd, buffer, 1, offset, NULL);
+    int r = uv_fs_write(UV_LOOP, &write_req, fd, &buffer.data, 1, offset, NULL);
 
     if (!running) {
       uv_run(UV_LOOP, UV_RUN_DEFAULT);
@@ -361,10 +366,11 @@ namespace fs {
     return err;
   }
 
+
   //
   //
   //
-  uv_buf_t Filesystem::readFileSync(const char* path) {
+  Buffer Filesystem::readFileSync(const char* path) {
     ReadOptions opts;
     return readFileSync(path, opts);
   }
@@ -372,18 +378,16 @@ namespace fs {
   //
   //
   //
-  uv_buf_t Filesystem::readFileSync(const char* path, ReadOptions opts) {
+  Buffer Filesystem::readFileSync(const char* path, ReadOptions opts) {
     Stats st = statSync(path);
     int fd = openSync(path, opts.flags, opts.mode);
     int size = st.size;
 
-    uv_buf_t buffer;
-    buffer.base = (char *) malloc(size);
-    buffer.len = size;
-
-    readSync(fd, &buffer, 0, size);
+    Buffer buf(size);
+    readSync(fd, &buf.data, 0, size);
     closeSync(fd);
-    return buffer;
+
+    return buf;
   }
 
 
@@ -483,7 +487,7 @@ namespace fs {
   //
   //
   //
-  int Filesystem::writeFileSync(const char* path, uv_buf_t* buffer) {
+  int Filesystem::writeFileSync(const char* path, Buffer buffer) {
     WriteOptions opts;
     return writeFileSync(path, buffer, opts);
   }
@@ -492,9 +496,9 @@ namespace fs {
   //
   //
   //
-  int Filesystem::writeFileSync(const char* path, uv_buf_t* buffer, WriteOptions opts) {
+  int Filesystem::writeFileSync(const char* path, Buffer buffer, WriteOptions opts) {
     int fd = openSync(path, opts.flags, opts.mode);
-    int bytesWritten = writeSync(fd, buffer, 0, buffer->len);
+    int bytesWritten = writeSync(fd, buffer, 0, buffer.length());
     closeSync(fd);
     return bytesWritten;
   }

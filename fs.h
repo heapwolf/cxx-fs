@@ -56,6 +56,45 @@ namespace fs {
   };
 
   //
+  // TODO
+  // move out into another lib.
+  //
+  class Buffer {
+
+    public:
+
+      uv_buf_t data;
+
+      string toString() {
+        string s;
+        s.assign(data.base, data.len);
+        return s;
+      }
+
+      int length() {
+        return data.len;
+      }
+
+      Buffer(int size) {
+        data.base = (char *) malloc(size);
+        data.len = size;
+      }
+
+      Buffer(string str) {
+        data = uv_buf_init((char*) str.c_str(), str.length());
+      }
+
+      Buffer() {
+      }
+
+      Buffer(const Buffer &buf) {
+        data = buf.data;
+      }
+
+      Buffer& operator= (const Buffer &buf);
+  };
+
+  //
   // Some reasonable defaults for Read and Write options...
   //
   struct ReadOptions {
@@ -91,7 +130,7 @@ namespace fs {
       int readSync(uv_file fd, uv_buf_t* buffer, int64_t offset, int64_t bytes);
 
       void write(uv_file, uv_buf_t, int64_t, Callback<Error>);
-      int writeSync(uv_file fd, uv_buf_t* buffer, int64_t offset, int64_t length);
+      int writeSync(uv_file fd, Buffer buffer, int64_t offset, int64_t length);
 
       void close(uv_file fd, Callback<Error>);
       int closeSync(uv_file fd);
@@ -101,15 +140,16 @@ namespace fs {
       //
       void readFile(const char*, Callback<Error, string>);
       void readFile(const char*, ReadOptions, Callback<Error, string>);
-      uv_buf_t readFileSync(const char*, ReadOptions);
-      uv_buf_t readFileSync(const char*);
+
+      Buffer readFileSync(const char*, ReadOptions);
+      Buffer readFileSync(const char*);
 
       void writeFile(const char*, string, Callback<Error>);
       void writeFile(const char*, string, WriteOptions, Callback<Error>);
       void writeFile(const char*, uv_buf_t, Callback<Error>);
       void writeFile(const char*, uv_buf_t, WriteOptions, Callback<Error>);
-      int writeFileSync(const char* path, uv_buf_t* buffer);
-      int writeFileSync(const char* path, uv_buf_t* buffer, WriteOptions opts);
+      int writeFileSync(const char* path, Buffer buffer);
+      int writeFileSync(const char* path, Buffer buffer, WriteOptions opts);
 
       Filesystem() {
         UV_LOOP = uv_default_loop();
