@@ -121,6 +121,7 @@ int main() {
   fs.readFile("test.txt", [&](auto err, auto data) {
 
     ASSERT("a file should be opened without an error", err == false);
+    ASSERT("the async data should be the same as the sync data", data.toString() == readBuffer.toString());
 
     fs.writeFile("out.txt", sillystring, [&](auto err) {
       fs.readFile("out.txt", [&](auto err, auto data) {

@@ -411,8 +411,10 @@ namespace nodeuv {
 
     stat(path, [&](auto err, auto stats) {
 
+      Buffer emptyBuffer(0);
+
       if (err) {
-        cb(err, "");
+        cb(err, emptyBuffer);
         return;
       }
  
@@ -421,13 +423,13 @@ namespace nodeuv {
       open(path, opts.flags, opts.mode, [&](auto err, auto fd) {
 
         if (err) {
-          cb(err, "");
+          cb(err, emptyBuffer);
           return;
         }
 
         int64_t offset = 0;
-        vector<Buffer> bigBuffer;
-        //stringstream ss;
+        vector<string> bigBuffer;
+        int newbuff_size = 0;
         static function<void()> reader;
 
         reader = [&]() {
@@ -442,8 +444,17 @@ namespace nodeuv {
 
             read(fd, size, offset, [&](auto err, auto buf) {
               offset = offset + buf.len;
-              //ss << string(buf.base);
-              bigBuffer.push_back(Buffer(buf.base));
+
+              //
+              // this ugly shit creates a copy so we can free
+              // buf and move on, this is a shitty way to do
+              // this though.
+              //
+              string s;
+              s.assign(buf.base, buf.len);
+              newbuff_size += s.size();
+
+              bigBuffer.push_back(s);
               free(buf.base);
               reader();
             });
@@ -452,16 +463,15 @@ namespace nodeuv {
           else {
             close(fd, [&](auto err) {
 
-              int newbuff_size = 0;
+              Buffer buf(newbuff_size);
+              int source_start = 0;
 
-              for (auto b& : bigBuffer) {
-                newbuff_size += b.length();
+              for (auto &b : bigBuffer) {
+                buf.copy(Buffer(b), 0, source_start);
+                source_start += b.length();
               }
 
-              Buffer buf(newbuff_size);
-              // now copy shit in
-
-              cb(err, ss.str().substr(0, size));
+              cb(err, buf);
             });
           }
         }; 
@@ -476,7 +486,7 @@ namespace nodeuv {
   //
   //
   //
-  void Filesystem::readFile(string p, Callback<Error, string> cb) {
+  void Filesystem::readFile(string p, Callback<Error, Buffer> cb) {
     ReadOptions opts;
     readFile(p, opts, cb);
   }

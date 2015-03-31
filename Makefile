@@ -1,5 +1,5 @@
 
-DEPS ?= gyp libuv
+DEPS ?= gyp libuv buffer
 
 all: build test sanity
 
@@ -13,6 +13,11 @@ deps/gyp:
 libuv: deps/libuv
 deps/libuv:
 	git clone --depth 1 git://github.com/libuv/libuv.git ./deps/libuv
+
+buffer: deps/buffer
+deps/buffer:
+	git clone --depth 1 git://github.com/hij1nx/nodeuv-buffer.git ./deps/buffer
+	make -C ./deps/buffer
 
 build: $(DEPS)
 	deps/gyp/gyp --depth=. -Goutput_dir=./out -Icommon.gypi --generator-output=./build -Dlibrary=static_library -Duv_library=static_library -f make

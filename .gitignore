@@ -2,6 +2,7 @@ build
 util
 deps
 ./test/test
+./test/sanity
 ./test/out.txt
 .DS_Store
 *.sw*

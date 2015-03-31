@@ -122,6 +122,7 @@ another module called `nodeuv-buffer`.
 
 ## INSTANCE METHODS
 ### buf.toString();
+### `void` buf.copy(Buffer targetBuf[, int targetStart][, int sourceStart][, int sourceEnd]);
 
 ## STATIC MEMBERS
 ### buf.data

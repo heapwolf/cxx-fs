@@ -11,6 +11,7 @@
       ],
       'dependencies': [
         './deps/libuv/uv.gyp:libuv',
+        './deps/buffer/build.gyp:nodeuv-buffer',
       ],
     },
     {

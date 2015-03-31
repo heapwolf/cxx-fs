@@ -8,6 +8,8 @@
 #include <iostream>
 #include <functional>
 
+#include "./deps/buffer/buffer.h"
+
 extern "C" {
 #include "uv.h"
 }
@@ -53,82 +55,6 @@ namespace nodeuv {
       inline operator bool() const {
         return (message.length() > 0 || code != 0);
       }
-  };
-
-  //
-  // TODO
-  // move out into another lib.
-  //
-
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
-
-  class Buffer {
-
-    public:
-
-      uv_buf_t data;
-
-      string toString() {
-        string s;
-        s.assign(data.base, data.len);
-        return s;
-      }
-
-      int length() {
-        return data.len;
-      }
-
-      int copy(Buffer b) {
-        return this->_copy(b, 0, b.length(), 0);
-      }
-
-      int copy(Buffer b, int target_start) {
-        return this->_copy(b, target_start, b.length(), 0);
-      }
-
-      int copy(Buffer b, int target_start, int source_start) {
-        return this->_copy(b, target_start, source_start, 0);
-      }
-
-      int _copy(Buffer b, int target_start, int source_start, int source_end) {
-
-        size_t obj_length = b.length();
-        size_t target_length = this->length();
-        char* target_data = this->data.base;
-
-        if (target_start >= target_length || source_start >= source_end) {
-          return 0;
-        }
-
-        if (source_start > obj_length) {
-          throw runtime_error("out of range index");
-        }
-
-        uint32_t to_copy = MIN(MIN(source_end - source_start,
-          target_length - target_start),
-          obj_length - source_start);
-
-        memmove(this->data + target_start, b->data + source_start, to_copy);
-        return to_copy;
-      }
-
-      Buffer(int size) {
-        data.base = (char *) malloc(size);
-        data.len = size;
-      }
-
-      Buffer(string str) {
-        data = uv_buf_init((char*) str.c_str(), str.length());
-      }
-
-      Buffer() {
-      }
-
-      Buffer(const Buffer &buf) {
-        data = buf.data;
-      }
-
-      Buffer& operator= (const Buffer &buf);
   };
 
   //
