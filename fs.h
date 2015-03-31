@@ -76,7 +76,6 @@ namespace nodeuv {
       bool running = false;
 
       string cwd();
-      uv_buf_t createBuffer(string s);
 
       void stat(string, Callback<Error, Stats>);
       Stats statSync(string);

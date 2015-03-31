@@ -21,13 +21,6 @@ namespace nodeuv {
     return string(path);
   }
 
-  uv_buf_t Filesystem::createBuffer(string s) {
-
-    static uv_buf_t buffer;
-    buffer = uv_buf_init((char*) s.c_str(), s.length());
-    return buffer;
-  }
-
   //
   //
   //
