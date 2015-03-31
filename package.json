@@ -1,8 +1,8 @@
 {
   "name": "nodeuv-fs",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "repo": "hij1nx/nodeuv-fs",
-  "description": "A simple c++11 style wrapper for libuv's file system calls.",
+  "description": "A friendly, nodejs-like file i/o experience for C++",
   "keywords": ["fs", "libuv", "streams"],
   "src": ["fs.h"],
   "install": "make"

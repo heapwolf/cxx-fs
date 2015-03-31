@@ -1,5 +1,5 @@
 # SYNOPSIS
-A friendly c++1y wrapper for libuv's filesystem operations
+A friendly, nodejs-like file i/o experience for C++
 
 # USAGE
 
@@ -33,27 +33,27 @@ Creates a loop for file operations.
 
 ## INSTANCE METHODS
 
-### fs.cwd();
+### `string` fs.cwd();
 Returns a string that represents the current working directory.
 
-### fs.readFile(path, callback);
+### `string` fs.readFile(string path, Callback cb);
 Stats, Opens, reads whole file, callback provides (`error`, `streambuf`).
 
-### fs.readFileSync(path);
+### `Buffer` fs.readFileSync(string path);
 Stats, Opens, reads whole file and returns an instance of `Buffer`.
 
-### fs.writeFile(path, buffer, callback);
+### `void` fs.writeFile(string path, Buffer buf, Callback cb);
 Opens, writes whole buffer, callback provides (`error`).
 
-### fs.writeFileSync(path, buffer);
+### `Buffer` fs.writeFileSync(string path, Buffer buf);
 Opens, writes whole value from the instance of `Buffer`.
 
-### fs.stat(path, callback);
+### `void` fs.stat(string path, Callback cb);
 Callback provides (`error`, `stats`), where stats is a struct containing 
 the following members...
 
-### fs.statSync(path);
-Returns a Stats object.
+### `Stats` fs.statSync(string path);
+Returns a Stats struct.
 
 ```cpp
 uint64_t dev;
@@ -74,38 +74,46 @@ uv_timespec_t ctime;
 uv_timespec_t birthtime;
 ```
 
-### fs.mkdirSync(path, [mode]);
-Create a directory sync, optionally pass the mode as an octal.
+### `Error` fs.mkdirSync(string path, [int mode]);
+Create a directory sync, optionally pass the mode as an octal. Returns
+an error instance that will have the value of null if the operation was
+successful.
 
-### fs.rmdirSync(path);
-Remove a direcory sync.
+### `Error` fs.rmdirSync(string path);
+Remove a direcory sync. Returns an error object that has the value of
+null if the operation was a success.
 
-### fs.open(path, callback);
-Callback provides (`error`, `fd`) where fd is a file descriptor.
+### `void` fs.open(string path, Callback cb);
+The callback provides two arguments `Error` which will be null if the
+operation was a success and a file descriptor.
 
-### fs.openSync(path, [mode]);
-Open a file sync, optionally pass the mode as an octal.
+### `int` fs.openSync(string path, [int mode]);
+Open a file sync, optionally pass the mode as an octal. Returns the
+file descriptor.
 
-### fs.read(fd, bufferSize, offset, callback);
+### `void` fs.read(int fd, int bufferSize, int offset, Callback cb);
 Callback provides (`error`, `uv_buf_t`).
 
-### fs.readSync(fd, bufferSize, offset);
+### `Buffer` fs.readSync(int fd, int bufferSize, int offset);
+Returns an instance of `Buffer`.
+
+### `void` fs.write(int fd, Buffer buf, int offset, Callback cb);
 Callback provides (`error`, `uv_buf_t`).
 
-### fs.write(fd, buffer, offset, callback);
-Callback provides (`error`, `uv_buf_t`).
+### `int` fs.writeSync(int fd, Buffer buf, int offset, int length);
+Write an instance of `Buffer` to a file, returns the number of bytes
+written.
 
-### fs.writeSync(fd, buffer, offset, length);
-Write an instance of `Buffer` to a file, returns the number of bytes written.
+### `void` fs.close(fd, callback);
+Close a file. Callback provides an instance of `Error` which is null
+if the operation was a success.
 
-### fs.close(fd, callback);
-Close a file. Callback provides (`error`).
-
-### fs.closeSync(fd);
+### `Error` fs.closeSync(fd);
 Close a file sync.
 
 # Buffers
-A little sugar on top of `uv_buf_t`.
+A little sugar on top of `uv_buf_t`. This should get moved out to
+another module called `nodeuv-buffer`.
 
 ## CONSTRUCTOR
 ### Buffer buf(string);

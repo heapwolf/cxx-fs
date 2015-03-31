@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 using namespace std;
-using namespace fs;
+using namespace nodeuv;
 
 #define ASSERT(message, ...) do { \
   if(!(__VA_ARGS__)) { \

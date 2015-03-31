@@ -1,6 +1,6 @@
 #include "../fs.h"
 
-namespace fs {
+namespace nodeuv {
 
   Buffer& Buffer::operator= (const Buffer &buf) {
     data = buf.data;
@@ -142,7 +142,9 @@ namespace fs {
   //
   //
   //
-  void Filesystem::open(const char* path, int flags, int mode, Callback<Error, uv_file> cb) {
+  void Filesystem::open(string p, int flags, int mode, Callback<Error, uv_file> cb) {
+
+    const char* path = p.c_str();
 
     uv_fs_t open_req;
     static function<void(uv_fs_t* req)> on_open;
@@ -172,7 +174,9 @@ namespace fs {
   //
   //
   //
-  int Filesystem::openSync(const char* path, int flags, int mode) {
+  int Filesystem::openSync(string p, int flags, int mode) {
+
+    const char* path = p.c_str();
 
     uv_fs_t open_req;
     int result = uv_fs_open(UV_LOOP, &open_req, path, flags, mode, NULL);
@@ -268,7 +272,9 @@ namespace fs {
   //
   //
   //
-  Stats Filesystem::statSync(const char* path) {
+  Stats Filesystem::statSync(string p) {
+
+    const char * path = p.c_str(); 
 
     uv_fs_t stat_req;
     int r = uv_fs_stat(UV_LOOP, &stat_req, path, NULL);
@@ -291,7 +297,9 @@ namespace fs {
   //
   //
   //
-  void Filesystem::stat(const char* path, Callback<Error, Stats> cb) {
+  void Filesystem::stat(string p, Callback<Error, Stats> cb) {
+
+    const char* path = p.c_str();
 
     uv_fs_t stat_req;
     static function<void(uv_fs_t* req)> on_stat;
@@ -322,12 +330,14 @@ namespace fs {
   }
 
 
-  Error Filesystem::mkdirSync(const char* path) {
-    return mkdirSync(path, 0777);
+  Error Filesystem::mkdirSync(string p) {
+    return mkdirSync(p, 0777);
   }
 
 
-  Error Filesystem::mkdirSync(const char* path, int mode) {
+  Error Filesystem::mkdirSync(string p, int mode) {
+
+    const char* path = p.c_str();
 
     uv_fs_t mkdir_req;
     int result = uv_fs_mkdir(UV_LOOP, &mkdir_req, path, mode, NULL);
@@ -347,7 +357,9 @@ namespace fs {
   }
 
 
-  Error Filesystem::rmdirSync(const char* path) {
+  Error Filesystem::rmdirSync(string p) {
+
+    const char* path = p.c_str();
 
     uv_fs_t rmdir_req;
     int result = uv_fs_rmdir(UV_LOOP, &rmdir_req, path, NULL);
@@ -370,15 +382,18 @@ namespace fs {
   //
   //
   //
-  Buffer Filesystem::readFileSync(const char* path) {
+  Buffer Filesystem::readFileSync(string p) {
     ReadOptions opts;
-    return readFileSync(path, opts);
+    return readFileSync(p, opts);
   }
 
   //
   //
   //
-  Buffer Filesystem::readFileSync(const char* path, ReadOptions opts) {
+  Buffer Filesystem::readFileSync(string p, ReadOptions opts) {
+
+    const char* path = p.c_str();
+
     Stats st = statSync(path);
     int fd = openSync(path, opts.flags, opts.mode);
     int size = st.size;
@@ -396,7 +411,9 @@ namespace fs {
   // TODO
   // this is lame. should be buffers.
   //
-  void Filesystem::readFile(const char* path, ReadOptions opts, Callback<Error, string> cb) {
+  void Filesystem::readFile(string p, ReadOptions opts, Callback<Error, string> cb) {
+
+    const char* path = p.c_str();
 
     stat(path, [&](auto err, auto stats) {
 
@@ -453,15 +470,17 @@ namespace fs {
   //
   //
   //
-  void Filesystem::readFile(const char* path, Callback<Error, string> cb) {
+  void Filesystem::readFile(string p, Callback<Error, string> cb) {
     ReadOptions opts;
-    readFile(path, opts, cb);
+    readFile(p, opts, cb);
   }
 
   //
   //
   //
-  void Filesystem::writeFile(const char* path, uv_buf_t buffer, WriteOptions opts, Callback<Error> cb) {
+  void Filesystem::writeFile(string p, uv_buf_t buffer, WriteOptions opts, Callback<Error> cb) {
+
+    const char* path = p.c_str();
 
     open(path, opts.flags, opts.mode, [&](auto err, auto fd) {
 
@@ -487,17 +506,18 @@ namespace fs {
   //
   //
   //
-  int Filesystem::writeFileSync(const char* path, Buffer buffer) {
+  int Filesystem::writeFileSync(string p, Buffer buffer) {
     WriteOptions opts;
-    return writeFileSync(path, buffer, opts);
+    return writeFileSync(p, buffer, opts);
   }
 
 
   //
   //
   //
-  int Filesystem::writeFileSync(const char* path, Buffer buffer, WriteOptions opts) {
-    int fd = openSync(path, opts.flags, opts.mode);
+  int Filesystem::writeFileSync(string p, Buffer buffer, WriteOptions opts) {
+
+    int fd = openSync(p, opts.flags, opts.mode);
     int bytesWritten = writeSync(fd, buffer, 0, buffer.length());
     closeSync(fd);
     return bytesWritten;
@@ -507,30 +527,30 @@ namespace fs {
   //
   //
   //
-  void Filesystem::writeFile(const char* path, uv_buf_t buffer, Callback<Error> cb) {
+  void Filesystem::writeFile(string p, uv_buf_t buffer, Callback<Error> cb) {
     WriteOptions opts;
-    writeFile(path, buffer, opts, cb);
+    writeFile(p, buffer, opts, cb);
   }
 
   //
   //
   //
-  void Filesystem::writeFile(const char* path, string s, Callback<Error> cb) {
+  void Filesystem::writeFile(string p, string s, Callback<Error> cb) {
     WriteOptions opts;
-    writeFile(path, s, opts, cb);
+    writeFile(p, s, opts, cb);
   }
 
   //
   //
   //
-  void Filesystem::writeFile(const char* path, string s, WriteOptions opts, Callback<Error> cb) {
+  void Filesystem::writeFile(string p, string s, WriteOptions opts, Callback<Error> cb) {
 
     char b[s.size()];
     strcpy(b, s.c_str());
     uv_buf_t buffer;
     buffer = uv_buf_init(b, sizeof(b));
   
-    writeFile(path, buffer, opts, cb);  
+    writeFile(p, buffer, opts, cb);  
   }
 
 } // namespace fs

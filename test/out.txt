@@ -1,0 +1,29 @@
+#include <functional>
+#include <iostream>
+    class {
+    class {
+#define place string("world")
+
+#define bar()\
+      cout << 10 << endl;
+
+    public:
+      string message = "hello " + place;
+
+#undef place
+#undef bar
+    } b;
+
+
+      public:
+      void print() {
+            cout << b.message << endl;
+              }
+
+    } bla;
+
+
+  int main() {
+
+      bla.print();
+  }

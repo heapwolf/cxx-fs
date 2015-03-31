@@ -1,7 +1,8 @@
 build
 util
 deps
-test/test
-test/out.txt
+./test/test
+./test/out.txt
 .DS_Store
+*.sw*
 

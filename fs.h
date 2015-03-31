@@ -12,7 +12,7 @@ extern "C" {
 #include "uv.h"
 }
 
-namespace fs {
+namespace nodeuv {
 
   using namespace std;
 
@@ -20,7 +20,7 @@ namespace fs {
   class Writable;
   class Error;
 
-  // https://github.com/joyent/node/blob/master/lib/fs.js#L256
+  // https://github.com/iojs/io.js/blob/master/lib/fs.js#L256
   const unsigned int MAGIC_BUFFER_SIZE = 8192;
 
   struct Stats {
@@ -115,16 +115,16 @@ namespace fs {
       string cwd();
       uv_buf_t createBuffer(string s);
 
-      void stat(const char*, Callback<Error, Stats>);
-      Stats statSync(const char* path);
+      void stat(string, Callback<Error, Stats>);
+      Stats statSync(string);
 
-      Error mkdirSync(const char* path);
-      Error mkdirSync(const char* path, int mode);
+      Error mkdirSync(string);
+      Error mkdirSync(string, int);
 
-      Error rmdirSync(const char* path);
+      Error rmdirSync(string);
 
-      void open(const char*, int, int, Callback<Error, uv_file>);
-      int openSync(const char*, int, int);
+      void open(string, int, int, Callback<Error, uv_file>);
+      int openSync(string, int, int);
 
       void read(uv_file, int64_t, int64_t, Callback<Error, uv_buf_t>);
       int readSync(uv_file fd, uv_buf_t* buffer, int64_t offset, int64_t bytes);
@@ -138,18 +138,18 @@ namespace fs {
       // 
       // Higher level functions
       //
-      void readFile(const char*, Callback<Error, string>);
-      void readFile(const char*, ReadOptions, Callback<Error, string>);
+      void readFile(string, Callback<Error, string>);
+      void readFile(string, ReadOptions, Callback<Error, string>);
 
-      Buffer readFileSync(const char*, ReadOptions);
-      Buffer readFileSync(const char*);
+      Buffer readFileSync(string, ReadOptions);
+      Buffer readFileSync(string);
 
-      void writeFile(const char*, string, Callback<Error>);
-      void writeFile(const char*, string, WriteOptions, Callback<Error>);
-      void writeFile(const char*, uv_buf_t, Callback<Error>);
-      void writeFile(const char*, uv_buf_t, WriteOptions, Callback<Error>);
-      int writeFileSync(const char* path, Buffer buffer);
-      int writeFileSync(const char* path, Buffer buffer, WriteOptions opts);
+      void writeFile(string, string, Callback<Error>);
+      void writeFile(string, string, WriteOptions, Callback<Error>);
+      void writeFile(string, uv_buf_t, Callback<Error>);
+      void writeFile(string, uv_buf_t, WriteOptions, Callback<Error>);
+      int writeFileSync(string, Buffer);
+      int writeFileSync(string, Buffer, WriteOptions);
 
       Filesystem() {
         UV_LOOP = uv_default_loop();
