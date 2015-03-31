@@ -7,7 +7,7 @@ A friendly, nodejs-like file i/o experience for C++
 #include "../fs.h"
 
 using namespace std;
-using namespace fs;
+using namespace nodeuv;
 
 int main() {
  
