@@ -59,6 +59,9 @@ namespace nodeuv {
   // TODO
   // move out into another lib.
   //
+
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+
   class Buffer {
 
     public:
@@ -73,6 +76,40 @@ namespace nodeuv {
 
       int length() {
         return data.len;
+      }
+
+      int copy(Buffer b) {
+        return this->_copy(b, 0, b.length(), 0);
+      }
+
+      int copy(Buffer b, int target_start) {
+        return this->_copy(b, target_start, b.length(), 0);
+      }
+
+      int copy(Buffer b, int target_start, int source_start) {
+        return this->_copy(b, target_start, source_start, 0);
+      }
+
+      int _copy(Buffer b, int target_start, int source_start, int source_end) {
+
+        size_t obj_length = b.length();
+        size_t target_length = this->length();
+        char* target_data = this->data.base;
+
+        if (target_start >= target_length || source_start >= source_end) {
+          return 0;
+        }
+
+        if (source_start > obj_length) {
+          throw runtime_error("out of range index");
+        }
+
+        uint32_t to_copy = MIN(MIN(source_end - source_start,
+          target_length - target_start),
+          obj_length - source_start);
+
+        memmove(this->data + target_start, b->data + source_start, to_copy);
+        return to_copy;
       }
 
       Buffer(int size) {
@@ -138,8 +175,8 @@ namespace nodeuv {
       // 
       // Higher level functions
       //
-      void readFile(string, Callback<Error, string>);
-      void readFile(string, ReadOptions, Callback<Error, string>);
+      void readFile(string, Callback<Error, Buffer>);
+      void readFile(string, ReadOptions, Callback<Error, Buffer>);
 
       Buffer readFileSync(string, ReadOptions);
       Buffer readFileSync(string);

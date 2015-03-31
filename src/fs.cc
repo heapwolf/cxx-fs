@@ -405,13 +405,7 @@ namespace nodeuv {
     return buf;
   }
 
-
-
-  //
-  // TODO
-  // this is lame. should be buffers.
-  //
-  void Filesystem::readFile(string p, ReadOptions opts, Callback<Error, string> cb) {
+  void Filesystem::readFile(string p, ReadOptions opts, Callback<Error, Buffer> cb) {
 
     const char* path = p.c_str();
 
@@ -432,7 +426,8 @@ namespace nodeuv {
         }
 
         int64_t offset = 0;
-        stringstream ss;
+        vector<Buffer> bigBuffer;
+        //stringstream ss;
         static function<void()> reader;
 
         reader = [&]() {
@@ -447,7 +442,8 @@ namespace nodeuv {
 
             read(fd, size, offset, [&](auto err, auto buf) {
               offset = offset + buf.len;
-              ss << string(buf.base);
+              //ss << string(buf.base);
+              bigBuffer.push_back(Buffer(buf.base));
               free(buf.base);
               reader();
             });
@@ -455,6 +451,16 @@ namespace nodeuv {
           }
           else {
             close(fd, [&](auto err) {
+
+              int newbuff_size = 0;
+
+              for (auto b& : bigBuffer) {
+                newbuff_size += b.length();
+              }
+
+              Buffer buf(newbuff_size);
+              // now copy shit in
+
               cb(err, ss.str().substr(0, size));
             });
           }
